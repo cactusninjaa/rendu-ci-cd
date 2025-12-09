@@ -27,11 +27,6 @@ app.patch("/api/todos/:id", async (req, res) => {
 });
 
 app.delete("/api/todos/:id", async (req, res) => {
-<<<<<<< Updated upstream
-  const result = await deleteTodo(req.params.id);
-  res.json(result);
-=======
   const todo = await deleteTodo(req.params.id);
   res.json(todo);
->>>>>>> Stashed changes
 });
