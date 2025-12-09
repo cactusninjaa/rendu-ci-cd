@@ -75,7 +75,7 @@ jobs:
     environment:
       name: production
     needs: build-docker
-    # if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
