@@ -12,6 +12,7 @@
     "lint:commit": "commitlint --from=HEAD~1"
   },
   "dependencies": {
+    "@sentry/node": "^10.29.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
