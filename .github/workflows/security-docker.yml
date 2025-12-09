@@ -17,7 +17,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t my-app:latest .
+          docker build -t my-app:latest -f packages/server/Dockerfile packages/server
 
   security-scan:
     needs: build
