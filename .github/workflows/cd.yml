@@ -1,4 +1,4 @@
-name: CD Pipeline
+name: CD
 
 on:
   push:
@@ -34,8 +34,8 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
+          context: ./packages/server
+          file: ./packages/server/Dockerfile
           push: ${{ github.ref_type == 'tag' }}
           platforms: linux/amd64
           tags: |
