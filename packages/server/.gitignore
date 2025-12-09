@@ -1,1 +1,3 @@
 /coverage
+# Sentry Config File
+.sentryclirc
