@@ -29,6 +29,11 @@ app.patch("/api/todos/:id", async (req, res) => {
   res.json(todo);
 });
 
+app.delete("/api/todos/:id", async (req, res) => {
+  const result = await deleteTodo(req.params.id);
+  res.json(result);
+});
+
 Sentry.setupExpressErrorHandler(app);
 
 app.get("/debug-sentry", () => {
