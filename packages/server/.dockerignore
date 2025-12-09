@@ -1,0 +1,11 @@
+# Dépendances locales
+node_modules
+
+# Fichiers de build locaux
+dist
+.npm
+
+# Logs et divers
+npm-debug.log
+.DS_Store
+README.md
