@@ -17,7 +17,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t todo-back:latest -f packages/server/Dockerfile packages/server
+          docker build -t anthxny/todo-back:latest -f packages/server/Dockerfile packages/server
 
   security-scan:
     needs: build
@@ -29,7 +29,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: todo-back:latest
+          image-ref: anthxny/todo-back:latest
           format: table
           exit-code: 1
           severity: CRITICAL
