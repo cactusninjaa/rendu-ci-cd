@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - "*"
+      - "v*"
   pull_request:
     branches:
       - main
@@ -69,35 +69,33 @@ jobs:
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}?imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
 
-  deploy-frontend:
-    name: Deploy Frontend on Vercel
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-    needs: build-docker
-    if: github.ref_type == 'tag'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    deploy-frontend:
+      name: Deploy Frontend on Vercel
+      runs-on: ubuntu-latest
+      environment:
+        name: production
+      needs: build-docker
+      if: github.ref_type == 'tag'
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: 22.x
 
-      - name: Install dependencies & build frontend
-        working-directory: ./packages/client
-        run: |
-          npm ci
-          npm run build
+        - name: Install dependencies & build frontend
+          working-directory: ./packages/client
+          run: |
+            npm ci
+            npm run build
 
-      - name: Deploy to Vercel
-        working-directory: ./packages/client
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          npx vercel build --token=$VERCEL_TOKEN
-          npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+        - name: Deploy to Vercel
+          working-directory: ./packages/client
+          env:
+            VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          run: |
+            npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+            npx vercel build --token=$VERCEL_TOKEN
+            npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
