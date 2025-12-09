@@ -33,6 +33,7 @@ jobs:
 
       - name: Build Docker image
         uses: docker/build-push-action@v6
+        if: github.event_name == 'pull_request'
         with:
           context: ./packages/server
           file: ./packages/server/Dockerfile
