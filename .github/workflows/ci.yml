@@ -40,3 +40,31 @@ jobs:
         with:
           name: server-build
           path: dist
+
+  notify:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord on Success
+        if: success()
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"✅ CI réussi sur \`${BRANCH}\` (commit \`${COMMIT}\`)\"}" \
+               $WEBHOOK_URL
+
+      - name: Notify Discord on Failure
+        if: failure()
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"❌ CI échoué sur \`${BRANCH}\` (commit \`${COMMIT}\`)\"}" \
+               $WEBHOOK_URL
