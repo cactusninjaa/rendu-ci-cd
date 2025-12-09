@@ -46,26 +46,17 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Notify Discord on Success
+      - name: Notify Success
+        uses: rjstone/discord-webhook-notify@v2
         if: success()
-        env:
-          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          BRANCH: ${{ github.ref_name }}
-          COMMIT: ${{ github.sha }}
-        run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\": \"✅ CI réussi sur \`${BRANCH}\` (commit \`${COMMIT}\`)\"}" \
-               $WEBHOOK_URL
-
-      - name: Notify Discord on Failure
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          severity: info
+          details: All tests passed!
+      - name: Notify Failure
+        uses: rjstone/discord-webhook-notify@v2
         if: failure()
-        env:
-          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          BRANCH: ${{ github.ref_name }}
-          COMMIT: ${{ github.sha }}
-        run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{\"content\": \"❌ CI échoué sur \`${BRANCH}\` (commit \`${COMMIT}\`)\"}" \
-               $WEBHOOK_URL
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          severity: info
+          details: All tests failed!
