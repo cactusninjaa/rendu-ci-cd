@@ -60,6 +60,8 @@ jobs:
   deploy-backend:
     name: Deploy Backend on Render
     runs-on: ubuntu-latest
+    environment:
+      name: production
     needs: build-docker
     if: github.ref_type == 'tag'
     steps:
