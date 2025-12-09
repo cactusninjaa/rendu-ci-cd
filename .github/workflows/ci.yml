@@ -44,6 +44,7 @@ jobs:
   notify:
     needs: ci
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Notify Discord on Success
         if: success()
