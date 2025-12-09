@@ -25,8 +25,3 @@ app.patch("/api/todos/:id", async (req, res) => {
   const todo = await toggleTodo(req.params.id);
   res.json(todo);
 });
-
-app.delete("/api/todos/:id", async (req, res) => {
-  const result = await deleteTodo(req.params.id);
-  res.json(result);
-});
