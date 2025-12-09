@@ -32,7 +32,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build Docker image
-        if: github.ref_type == 'tag'
         uses: docker/build-push-action@v6
         with:
           context: ./packages/server
