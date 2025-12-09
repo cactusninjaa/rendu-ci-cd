@@ -1,11 +1,11 @@
-name: CI/CD Pipeline
+name: CD Pipeline
 
 on:
   push:
     branches:
       - main
     tags:
-      - '*'
+      - "*"
   pull_request:
     branches:
       - main
@@ -66,4 +66,3 @@ jobs:
       - name: Trigger Render Deploy Hook
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}?imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
-
