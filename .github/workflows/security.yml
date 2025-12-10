@@ -1,4 +1,4 @@
-name: Security
+name: Security Audits
 
 on:
   push:
@@ -36,3 +36,13 @@ jobs:
         run: npm ci
       - name: Audit client
         run: npm audit --audit-level=high
+
+  notify:
+    needs: [audit-server, audit-client]
+    uses: ./.github/workflows/notify.yml
+    with:
+      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
+      message: "All audits completed!"
+      workflow_name: "Security Audits"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
