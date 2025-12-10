@@ -9,9 +9,13 @@
     "test": "vitest",
     "test-coverage": "vitest run --coverage",
     "lint": "npx eslint 'src/**/*.{js,ts,tsx}'",
-    "lint:commit": "commitlint --from=HEAD~1"
+    "lint:commit": "commitlint --from=HEAD~1",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org iim-g7 --project node-express dist && sentry-cli sourcemaps upload --org iim-g7 --project node-express dist"
   },
   "dependencies": {
+    "@sentry/cli": "^2.58.2",
+    "@sentry/integrations": "^7.114.0",
+    "@sentry/node": "^10.29.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
