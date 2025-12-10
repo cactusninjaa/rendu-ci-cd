@@ -14,7 +14,6 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.ref_type == 'tag'
-    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,7 +60,8 @@ jobs:
   deploy-backend:
     name: Deploy Backend on Render
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: production
     needs: build-docker
     if: github.ref_type == 'tag'
     steps:
@@ -70,44 +70,71 @@ jobs:
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}?imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
 
   deploy-frontend:
-  name: Deploy Frontend on Vercel
-  runs-on: ubuntu-latest
-  environment:
-    name: production
-  needs: build-docker
-  if: github.ref_type == 'tag'
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    name: Deploy Frontend on Vercel
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    needs: build-docker
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
 
-    - name: Install dependencies & build frontend
-      working-directory: ./packages/client
-      run: |
-        npm ci
-        npm run build
+      - name: Install dependencies & build frontend
+        working-directory: ./packages/client
+        run: |
+          npm ci
+          npm run build
 
-    - name: Deploy to Vercel
-      working-directory: ./packages/client
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      run: |
-        npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-        npx vercel deploy --prod --token=$VERCEL_TOKEN
+      - name: Deploy to Vercel
+        working-directory: ./packages/client
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          npx vercel deploy --prod --token=$VERCEL_TOKEN
+
+  smoke-test:
+    name: Smoke tests (frontend + backend)
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    needs:
+      - deploy-backend
+      - deploy-frontend
+    if: github.ref_type == 'tag'
+    env:
+      BACKEND_URL: ${{ secrets.BACKEND_URL }} 
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+    steps:
+      - name: Wait for services to be up
+        run: sleep 30
+
+      - name: Smoke test backend
+        run: |
+          echo "Testing backend: $BACKEND_URL"
+          curl -f "$BACKEND_URL" || (echo "Backend smoke test failed" && exit 1)
+
+      - name: Smoke test frontend
+        run: |
+          echo "Testing frontend: $FRONTEND_URL"
+          curl -f "$FRONTEND_URL" || (echo "Frontend smoke test failed" && exit 1)
 
   notify:
     needs:
       - build-docker
       - deploy-backend
       - deploy-frontend
+      - smoke-test
     uses: ./.github/workflows/notify.yml
     with:
       status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
       workflow_name: "CD Pipeline"
-      message: "Docker build and deployment completed!"
+      message: "Docker build, deployment et smoke tests terminés !"
     secrets:
       webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
