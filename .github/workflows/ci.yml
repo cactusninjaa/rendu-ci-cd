@@ -49,4 +49,4 @@ jobs:
       workflow_name: "CI Pipeline"
       message: "Server CI completed!"
     secrets:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
