@@ -15,6 +15,8 @@ app.get("/api/todos", async (req, res) => {
   res.json(todos);
 });
 
+console.log("hello");
+
 app.post("/api/todos", async (req, res) => {
   const { text } = req.body;
   const todo = await addTodo(text);
