@@ -38,6 +38,7 @@ jobs:
         run: npm audit --audit-level=high
 
   notify:
+    needs: [audit-server, audit-client]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -47,11 +48,11 @@ jobs:
         with:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
           severity: info
-          details: All ci tests passed!
+          details: All audit tests passed!
       - name: Notify Failure
         uses: rjstone/discord-webhook-notify@v2
         if: failure()
         with:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
           severity: info
-          details: Ci tests failed!
+          details: Audit tests failed!
