@@ -1,4 +1,4 @@
-name: Security
+name: Security Audits
 
 on:
   push:
@@ -39,20 +39,10 @@ jobs:
 
   notify:
     needs: [audit-server, audit-client]
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Notify Success
-        uses: rjstone/discord-webhook-notify@v2
-        if: success()
-        with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          severity: info
-          details: All audit tests passed!
-      - name: Notify Failure
-        uses: rjstone/discord-webhook-notify@v2
-        if: failure()
-        with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          severity: info
-          details: Audit tests failed!
+    uses: ./.github/workflows/notify.yml
+    with:
+      status: ${{ job.status }}
+      message: "All audits completed!"
+      workflow_name: "Security Audits"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

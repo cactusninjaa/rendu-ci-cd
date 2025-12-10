@@ -68,3 +68,13 @@ jobs:
       - name: Trigger Render Deploy Hook
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}?imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
+
+  notify:
+    needs: [build-docker, deploy-backend]
+    uses: ./.github/workflows/notify.yml
+    with:
+      status: ${{ job.status }}
+      workflow_name: "CD Pipeline"
+      message: "Docker build and deployment completed!"
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
