@@ -96,9 +96,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          npx vercel build --token=$VERCEL_TOKEN
-          npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
-          
+          npx vercel deploy --prod --token=$VERCEL_TOKEN
   notify:
     needs:
       - build-docker
