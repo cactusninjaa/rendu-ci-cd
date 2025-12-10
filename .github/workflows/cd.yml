@@ -2,20 +2,18 @@ name: CD
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
+      - "test-*"
   pull_request:
     branches:
-      - main
+      - main       
 
 jobs:
   build-docker:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    environment: production
-    if: github.event_name == 'pull_request' || github.ref_type == 'tag' 
+    if: github.event_name == 'pull_request' || github.ref_type == 'tag'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,6 +25,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Login to Docker Hub
+        if: github.ref_type == 'tag'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -37,7 +36,7 @@ jobs:
         with:
           context: ./packages/server
           file: ./packages/server/Dockerfile
-          push: ${{ github.ref_type == 'tag' }}
+          push: ${{ github.ref_type == 'tag' }} 
           platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}
@@ -70,33 +69,33 @@ jobs:
         run: |
           curl "${{ secrets.RENDER_DEPLOY_HOOK }}?imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
 
-    deploy-frontend:
-      name: Deploy Frontend on Vercel
-      runs-on: ubuntu-latest
-      environment:
-        name: production
-      needs: build-docker
-      if: github.ref_type == 'tag'
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+  deploy-frontend:
+    name: Deploy Frontend on Vercel
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    needs: build-docker
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: 22.x
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
 
-        - name: Install dependencies & build frontend
-          working-directory: ./packages/client
-          run: |
-            npm ci
-            npm run build
+      - name: Install dependencies & build frontend
+        working-directory: ./packages/client
+        run: |
+          npm ci
+          npm run build
 
-        - name: Deploy to Vercel
-          working-directory: ./packages/client
-          env:
-            VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          run: |
-            npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-            npx vercel build --token=$VERCEL_TOKEN
-            npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+      - name: Deploy to Vercel
+        working-directory: ./packages/client
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          npx vercel build --token=$VERCEL_TOKEN
+          npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
