@@ -50,3 +50,39 @@ describe("POST /api/todos", () => {
     });
   });
 });
+
+describe("PATCH /api/todos/:id", () => {
+  it("modify 'completed' status", async () => {
+    vi.spyOn(db, "toggleTodo").mockResolvedValue({
+      id: "2",
+      text: "New Todo",
+      completed: true,
+      createdAt: "2025-11-02T12:00:00.000Z",
+    });
+
+    const res = await request(app).patch("/api/todos/2");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      id: "2",
+      text: "New Todo",
+      completed: true,
+      createdAt: "2025-11-02T12:00:00.000Z",
+    });
+  });
+});
+
+describe("DELETE /api/todos/:id", () => {
+  it("delete a todo element", async () => {
+    vi.spyOn(db, "deleteTodo").mockResolvedValue({
+      success: true,
+    });
+
+    const res = await request(app).delete("/api/todos/2");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      success: true,
+    });
+  });
+});
