@@ -1,0 +1,52 @@
+name: Reusable Notify
+
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+      message:
+        required: false
+        type: string
+        default: ""
+      workflow_name:
+        required: false
+        type: string
+      username:
+        required: false
+        type: string
+        default: "Rendu CI/CD"
+
+    secrets:
+      webhookUrl:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Get last commit info
+        id: commit
+        run: |
+          echo "COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an')" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=$(git log -1 --pretty=format:'%s')" >> $GITHUB_ENV
+
+      - name: Send Discord Notification
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.webhookUrl }}
+          avatarUrl: https://gravatar.com/avatar/b240587320595128e75d725307420c14?s=400&d=robohash&r=x
+          username: ${{ inputs.username }}
+          severity: ${{ inputs.status == 'success' && 'info' || 'warn' }}
+          description: |
+            **Workflow:** ${{ inputs.workflow_name || github.workflow }}  
+            **Status:** ${{ inputs.status }}  
+            **Commit:** ${{ env.COMMIT_MESSAGE }}  
+            **Author:** ${{ env.COMMIT_AUTHOR }}  
+            ${{ inputs.message }}

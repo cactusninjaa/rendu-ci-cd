@@ -99,3 +99,16 @@ jobs:
           npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
           npx vercel build --token=$VERCEL_TOKEN
           npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          
+  notify:
+    needs:
+      - build-docker
+      - deploy-backend
+      - deploy-frontend
+    uses: ./.github/workflows/notify.yml
+    with:
+      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
+      workflow_name: "CD Pipeline"
+      message: "Docker build and deployment completed!"
+    secrets:
+      webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
