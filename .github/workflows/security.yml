@@ -41,7 +41,7 @@ jobs:
     needs: [audit-server, audit-client]
     uses: ./.github/workflows/notify.yml
     with:
-      status: ${{ job.status }}
+      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
       message: "All audits completed!"
       workflow_name: "Security Audits"
     secrets:

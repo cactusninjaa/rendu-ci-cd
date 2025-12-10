@@ -45,7 +45,7 @@ jobs:
     needs: ci
     uses: ./.github/workflows/notify.yml
     with:
-      status: ${{ job.status }}
+      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
       workflow_name: "CI Pipeline"
       message: "Server CI completed!"
     secrets:

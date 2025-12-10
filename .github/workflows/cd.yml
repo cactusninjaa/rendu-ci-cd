@@ -73,7 +73,7 @@ jobs:
     needs: [build-docker, deploy-backend]
     uses: ./.github/workflows/notify.yml
     with:
-      status: ${{ job.status }}
+      status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
       workflow_name: "CD Pipeline"
       message: "Docker build and deployment completed!"
     secrets:
