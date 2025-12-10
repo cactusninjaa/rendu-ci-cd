@@ -77,4 +77,4 @@ jobs:
       workflow_name: "CD Pipeline"
       message: "Docker build and deployment completed!"
     secrets:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
