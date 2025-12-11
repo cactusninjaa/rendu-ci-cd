@@ -1,17 +1,26 @@
 import "./instrument.js";
 import express from "express";
 import cors from "cors";
-import { getAllTodos, addTodo, toggleTodo, deleteTodo } from "./todos.js";
 import dotenv from "dotenv";
 import * as Sentry from "@sentry/node";
+
+import { getAllTodos, addTodo, toggleTodo, deleteTodo } from "./todos.js";
 
 dotenv.config();
 
 export const app = express();
+
 Sentry.setupExpressErrorHandler(app);
 
 app.use(cors());
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.get("/api/todos", async (req, res) => {
   const todos = await getAllTodos();
@@ -34,8 +43,8 @@ app.delete("/api/todos/:id", async (req, res) => {
   res.json(todo);
 });
 
-Sentry.setupExpressErrorHandler(app);
-
 app.get("/debug-sentry", () => {
   throw new Error("Sentry test");
 });
+
+Sentry.setupExpressErrorHandler(app);
