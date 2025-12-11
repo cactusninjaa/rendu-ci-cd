@@ -28,6 +28,9 @@ jobs:
     environment: production
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Get last commit info
         id: commit
         run: |
@@ -37,7 +40,7 @@ jobs:
       - name: Send Discord Notification
         uses: rjstone/discord-webhook-notify@v2
         with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhookUrl: ${{ secrets.webhookUrl }}
           avatarUrl: https://gravatar.com/avatar/b240587320595128e75d725307420c14?s=400&d=robohash&r=x
           username: ${{ inputs.username }}
           severity: ${{ inputs.status == 'success' && 'info' || 'warn' }}

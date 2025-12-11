@@ -2,20 +2,19 @@ name: CD
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
+      - "test-*"
   pull_request:
     branches:
-      - main
+      - main       
 
 jobs:
   build-docker:
     name: Build Docker Image
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref_type == 'tag'
     environment: production
-    if: github.event_name == 'pull_request' || github.ref_type == 'tag' 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,6 +26,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Login to Docker Hub
+        if: github.ref_type == 'tag'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -37,7 +37,7 @@ jobs:
         with:
           context: ./packages/server
           file: ./packages/server/Dockerfile
-          push: ${{ github.ref_type == 'tag' }}
+          push: ${{ github.ref_type == 'tag' }} 
           platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}
@@ -61,8 +61,7 @@ jobs:
   deploy-backend:
     name: Deploy Backend on Render
     runs-on: ubuntu-latest
-    environment:
-      name: production
+    environment: production
     needs: build-docker
     if: github.ref_type == 'tag'
     steps:
@@ -73,8 +72,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend on Vercel
     runs-on: ubuntu-latest
-    environment:
-      name: production
+    environment: production
     needs: build-docker
     if: github.ref_type == 'tag'
     steps:
@@ -98,15 +96,43 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          npx vercel build --token=$VERCEL_TOKEN
-          npx vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
-          
+          npx vercel deploy --prod --token=$VERCEL_TOKEN
+
+  smoke-test:
+    name: Smoke tests (frontend + backend)
+    runs-on: ubuntu-latest
+    environment: production
+    needs:
+      - deploy-backend
+      - deploy-frontend
+    if: github.ref_type == 'tag'
+    env:
+      BACKEND_URL: ${{ secrets.BACKEND_URL }} 
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+    steps:
+      - name: Wait for services to be up
+        run: sleep 30
+
+      - name: Smoke test backend
+        run: |
+          echo "Testing backend: $BACKEND_URL"
+          curl -f "$BACKEND_URL" || (echo "Backend smoke test failed" && exit 1)
+
+      - name: Smoke test frontend
+        run: |
+          echo "Testing frontend: $FRONTEND_URL"
+          curl -f "$FRONTEND_URL" || (echo "Frontend smoke test failed" && exit 1)
+
   notify:
-    needs: [build-docker, deploy-backend]
+    needs:
+      - build-docker
+      - deploy-backend
+      - deploy-frontend
+      - smoke-test
     uses: ./.github/workflows/notify.yml
     with:
       status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
       workflow_name: "CD Pipeline"
-      message: "Docker build and deployment completed!"
+      message: "Docker build, deployment et smoke tests terminés !"
     secrets:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
