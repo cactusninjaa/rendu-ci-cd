@@ -60,7 +60,7 @@ jobs:
     steps:
       - name: Trigger Render Deploy Hook
         run: |
-          curl "${{ secrets.RENDER_DEPLOY_HOOK }}?imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
+          curl "${{ secrets.RENDER_DEPLOY_HOOK }}&imgURL=${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}"
 
   deploy-frontend:
     name: Deploy Frontend on Vercel
