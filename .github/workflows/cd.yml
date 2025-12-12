@@ -14,6 +14,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.ref_type == 'tag'
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,13 +43,6 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ github.ref_name }}
             ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
-
-      - name: Update build cache
-        if: always()
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Docker security scan (Trivy)
         if: github.event_name == 'pull_request'
